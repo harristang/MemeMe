@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  MemeEditorViewController.swift
 //  MemeMe
 //
 //  Created by Harris Tang on 9/27/15.
@@ -8,16 +8,19 @@
 
 import UIKit
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
+class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
 
     @IBOutlet weak var topToolBar: UIToolbar!
     @IBOutlet weak var bottomToolbar: UIToolbar!
     @IBOutlet weak var topMemeField: UITextField!
     @IBOutlet weak var bottomMemeField: UITextField!
     @IBOutlet weak var cameraButton: UIBarButtonItem!
-    @IBOutlet weak var memeImage: UIImageView!
+    @IBOutlet weak var memeCaptureView: UIView!
+    @IBOutlet weak var memeImageView: UIImageView!
     @IBOutlet weak var shareButton: UIBarButtonItem!
     @IBOutlet weak var cancelButton: UIBarButtonItem!
+
+    var memeForEditing: Meme!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,15 +35,20 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     override func viewWillAppear(animated: Bool) {
         subscribeToKeyboardNotifications()
         
+        if (memeForEditing != nil) {
+            loadMeme()
+        }
         // enable share button when image is present
         checkImageForShareButton()
     }
     
     @IBAction func cancelMeme(sender: UIBarButtonItem) {
-        memeImage.image = nil
+        memeImageView.image = nil
         checkImageForShareButton()
         topMemeField.text = "TOP"
         bottomMemeField.text = "BOTTOM"
+        
+        dismissViewControllerAnimated(true, completion: nil)
     }
 
     @IBAction func pickImageFromCamera(sender: UIBarButtonItem) {
@@ -58,7 +66,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
     
     func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
-        memeImage.image = image
+        memeImageView.image = image
         dismissViewControllerAnimated(true, completion: nil)
     }
 
@@ -99,13 +107,13 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     func keyboardWillShow(notification: NSNotification) {
         if bottomMemeField.isFirstResponder() {
-            self.view.frame.origin.y -= getKeyboardHeight(notification)
+            view.frame.origin.y -= getKeyboardHeight(notification)
             topMemeField.enabled = false
         }
     }
     
     func keyboardWillHide(notification: NSNotification) {
-        self.view.frame.origin.y = 0
+        view.frame.origin.y = 0
         topMemeField.enabled = true
     }
 
@@ -127,7 +135,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         activityViewController.completionWithItemsHandler = {
             activity, completed, items, error in
             if completed {
-                self.saveMeme(self.topMemeField.text!, bottomMemeText: self.bottomMemeField.text!, memeImage: self.memeImage.image!, memeImageWithText: generatedMemeImage)
+                self.saveMeme(self.topMemeField.text!, bottomMemeText: self.bottomMemeField.text!, memeImage: self.memeImageView.image!, memeImageWithText: generatedMemeImage)
                 self.dismissViewControllerAnimated(true, completion: nil)
             }
         }
@@ -136,8 +144,10 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
 
     func saveMeme(topMemeText: String, bottomMemeText: String, memeImage: UIImage, memeImageWithText: UIImage) {
-        // meme initialized, but never used (for now).
-        let meme = MemeImage(topMemeText: topMemeText, bottomMemeText: bottomMemeText, memeImage: memeImage, memeImageWithText: memeImageWithText)
+   
+        let meme = Meme(topMemeText: topMemeText, bottomMemeText: bottomMemeText, memeImage: memeImage, memeImageWithText: memeImageWithText)
+   
+        (UIApplication.sharedApplication().delegate as! AppDelegate).memes.append(meme)
     }
 
     func generateMemedImage() -> UIImage
@@ -147,8 +157,9 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         bottomToolbar.hidden = true
 
         // Render view to an image
-        UIGraphicsBeginImageContext(self.view.frame.size)
-        self.view.drawViewHierarchyInRect(self.view.frame,
+        UIGraphicsBeginImageContext(view.frame.size)
+        
+        view.drawViewHierarchyInRect(view.frame,
             afterScreenUpdates: true)
         let memedImage : UIImage =
         UIGraphicsGetImageFromCurrentImageContext()
@@ -162,7 +173,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
     
     func checkImageForShareButton() {
-        if memeImage.image != nil {
+        if memeImageView.image != nil {
             shareButton.enabled = true
         } else {
             shareButton.enabled = false
@@ -179,6 +190,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                 bottomMemeField.text = ""
             }
         }
+    }
+    
+    func loadMeme() {
+        topMemeField.text = memeForEditing.topMemeText
+        bottomMemeField.text = memeForEditing.bottomMemeText
+        memeImageView.image = memeForEditing.memeImage
     }
 }
 
