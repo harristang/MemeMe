@@ -29,7 +29,8 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         cameraButton.enabled = UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)
         
         // set defaults for text fields
-        setMemeFields()
+        setupMemeField(topMemeField)
+        setupMemeField(bottomMemeField)
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -70,10 +71,9 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         dismissViewControllerAnimated(true, completion: nil)
     }
 
-    func setMemeFields() {
-        topMemeField.delegate = self
-        bottomMemeField.delegate = self
-
+    func setupMemeField(textField: UITextField) {
+        textField.delegate = self
+        
         let memeTextAttributes = [
             NSStrokeColorAttributeName : UIColor.blackColor(),
             NSForegroundColorAttributeName : UIColor.whiteColor(),
@@ -81,11 +81,8 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
             NSStrokeWidthAttributeName : -3.0
         ]
         
-        topMemeField.defaultTextAttributes = memeTextAttributes
-        topMemeField.textAlignment = NSTextAlignment.Center
-
-        bottomMemeField.defaultTextAttributes = memeTextAttributes
-        bottomMemeField.textAlignment = NSTextAlignment.Center
+        textField.defaultTextAttributes = memeTextAttributes
+        textField.textAlignment = NSTextAlignment.Center
     }
     
     override func viewWillDisappear(animated: Bool) {
@@ -107,7 +104,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     
     func keyboardWillShow(notification: NSNotification) {
         if bottomMemeField.isFirstResponder() {
-            view.frame.origin.y -= getKeyboardHeight(notification)
+            view.frame.origin.y = -getKeyboardHeight(notification)
             topMemeField.enabled = false
         }
     }

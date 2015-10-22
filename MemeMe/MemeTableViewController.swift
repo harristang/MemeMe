@@ -2,23 +2,21 @@
 //  MemeTableViewController.swift
 //  MemeMe
 //
-//  Created by Harris Tang on 10/18/15.
+//  Created by Harris Tang on 10/21/15.
 //  Copyright © 2015 Harris Tang. All rights reserved.
 //
 
 import UIKit
 
-class MemeTableViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class MemeTableViewController: UITableViewController {
 
-    @IBOutlet weak var memeTableView: UITableView!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        memeTableView.delegate = self
     }
-    
+
     override func viewWillAppear(animated: Bool) {
-        memeTableView.reloadData()
+        super.viewWillAppear(animated)
+        tableView.reloadData()
     }
     
     func getMemes() -> [Meme] {
@@ -26,16 +24,12 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, UITableV
         return memes
     }
 
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return getMemes().count
     }
-    
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        
-        let CellID = "MemeCell"
-        
-        let cell = tableView.dequeueReusableCellWithIdentifier(CellID, forIndexPath: indexPath)
-        
+
+    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCellWithIdentifier("MemeCell", forIndexPath: indexPath)
         let meme = getMemes()[indexPath.row]
 
         cell.textLabel!.text = meme.memeTitle()
@@ -44,9 +38,20 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, UITableV
         return cell
     }
     
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        let memeDetailViewController = self.storyboard!.instantiateViewControllerWithIdentifier("MemeDetailViewController") as! MemeDetailViewController
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        let memeDetailViewController = storyboard!.instantiateViewControllerWithIdentifier("MemeDetailViewController") as! MemeDetailViewController
         memeDetailViewController.meme = getMemes()[indexPath.row]
-        self.navigationController!.pushViewController(memeDetailViewController, animated: true)
+        navigationController!.pushViewController(memeDetailViewController, animated: true)
+    }
+
+    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return true
+    }
+
+    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+        if editingStyle == .Delete {
+            (UIApplication.sharedApplication().delegate as! AppDelegate).memes.removeAtIndex(indexPath.row)
+            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+        }
     }
 }

@@ -13,21 +13,19 @@ class MemeDetailViewController: UIViewController {
     @IBOutlet weak var memeDetailImageView: UIImageView!
     var meme: Meme!
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-    }
-
     override func viewWillAppear(animated: Bool) {
         memeDetailImageView.image = meme.memeImageWithText
-        self.tabBarController?.tabBar.hidden = true
+        tabBarController?.tabBar.hidden = true
     }
 
     override func viewWillDisappear(animated: Bool) {
-        self.tabBarController?.tabBar.hidden = false
+        tabBarController?.tabBar.hidden = false
     }
+
     @IBAction func editMeme(sender: UIBarButtonItem) {
-        let memeEditorViewControlller = self.storyboard!.instantiateViewControllerWithIdentifier("MemeEditorViewController") as! MemeEditorViewController
+        let memeEditorViewControlller = storyboard!.instantiateViewControllerWithIdentifier("MemeEditorViewController") as! MemeEditorViewController
+
         memeEditorViewControlller.memeForEditing = meme
-        self.presentViewController(memeEditorViewControlller, animated: true, completion: nil)
+        presentViewController(memeEditorViewControlller, animated: true, completion: nil)
     }
 }
